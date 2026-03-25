@@ -1,0 +1,9 @@
+services:
+  dailies:
+    build: .
+    ports:
+      - "4666:3000"
+    volumes:
+      - ./notes:/app/notes
+    user: "${UID}:${GID}"
+    restart: always
