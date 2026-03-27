@@ -14,3 +14,12 @@ export interface NoteDetail {
   content: string;
   timestamp: string;
 }
+
+export interface Task {
+  id: string;
+  noteId: string;
+  noteTitle: string | null;
+  text: string;
+  checked: boolean;
+  lineIndex: number;
+}

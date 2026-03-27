@@ -1,8 +1,8 @@
 import fs from "fs";
 import path from "path";
-import { NoteListItem, NoteDetail } from "./types";
+import { NoteListItem, NoteDetail, Task } from "./types";
 
-export type { NoteType, NoteListItem, NoteDetail } from "./types";
+export type { NoteType, NoteListItem, NoteDetail, Task } from "./types";
 
 const NOTES_DIR = path.join(process.cwd(), "notes");
 const RAW_DIR = path.join(NOTES_DIR, "raw");
@@ -108,6 +108,57 @@ export function deleteNote(id: string): boolean {
   const rawPath = path.join(RAW_DIR, `${id}.md`);
   if (fs.existsSync(rawPath)) { fs.unlinkSync(rawPath); deleted = true; }
   return deleted;
+}
+
+export function listAllTasks(): Task[] {
+  ensureDirs();
+
+  const processedFiles = fs.existsSync(PROCESSED_DIR)
+    ? fs.readdirSync(PROCESSED_DIR).filter((f) => f.endsWith(".md"))
+    : [];
+
+  const tasks: Task[] = [];
+
+  for (const file of processedFiles) {
+    const id = parseId(file);
+    const content = fs.readFileSync(path.join(PROCESSED_DIR, file), "utf-8");
+    const { title } = parseProcessed(content);
+    const lines = content.split("\n");
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const pending = line.match(/^(\s*)-\s+\[ \]\s+(.+)$/);
+      const done = line.match(/^(\s*)-\s+\[x\]\s+(.+)$/i);
+
+      if (pending) {
+        tasks.push({ id: `${id}::${i}`, noteId: id, noteTitle: title, text: pending[2].trim(), checked: false, lineIndex: i });
+      } else if (done) {
+        tasks.push({ id: `${id}::${i}`, noteId: id, noteTitle: title, text: done[2].trim(), checked: true, lineIndex: i });
+      }
+    }
+  }
+
+  return tasks;
+}
+
+export function toggleTask(noteId: string, lineIndex: number, checked: boolean): boolean {
+  ensureDirs();
+
+  const processedPath = path.join(PROCESSED_DIR, `${noteId}.md`);
+  if (!fs.existsSync(processedPath)) return false;
+
+  const content = fs.readFileSync(processedPath, "utf-8");
+  const lines = content.split("\n");
+
+  if (lineIndex < 0 || lineIndex >= lines.length) return false;
+
+  const line = lines[lineIndex];
+  lines[lineIndex] = checked
+    ? line.replace(/^(\s*-\s+)\[ \]/, "$1[x]")
+    : line.replace(/^(\s*-\s+)\[x\]/i, "$1[ ]");
+
+  fs.writeFileSync(processedPath, lines.join("\n"), "utf-8");
+  return true;
 }
 
 export function updateNote(id: string, content: string): NoteDetail | null {

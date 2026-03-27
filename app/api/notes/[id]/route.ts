@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getNote, updateNote, deleteNote } from "@/lib/notes";
+import { getNote, updateNote, deleteNote, toggleTask } from "@/lib/notes";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -24,4 +24,15 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   const note = updateNote(id, content);
   if (!note) return NextResponse.json({ error: "not found" }, { status: 404 });
   return NextResponse.json(note);
+}
+
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const { lineIndex, checked } = await req.json();
+  if (typeof lineIndex !== "number" || typeof checked !== "boolean") {
+    return NextResponse.json({ error: "lineIndex and checked required" }, { status: 400 });
+  }
+  const ok = toggleTask(id, lineIndex, checked);
+  if (!ok) return NextResponse.json({ error: "not found" }, { status: 404 });
+  return NextResponse.json({ ok: true });
 }

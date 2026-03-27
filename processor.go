@@ -34,7 +34,7 @@ For the body, use sections that make sense given the content. Always consider in
 - What each person is working on (with names)
 - Key decisions made
 - Blockers or issues raised
-- My action items (things the note-taker committed to or needs to follow up on) — format each item as a markdown checkbox: `- [ ] item`. ONLY the note-taker's items get checkboxes.
+- My action items (things the note-taker committed to or needs to follow up on) — format each item as a markdown checkbox: - [ ] item. ONLY the note-taker's items get checkboxes.
 - Their action items (things others committed to, with names) — regular bullet points, no checkboxes
 - Personal reminders or notes to self
 
